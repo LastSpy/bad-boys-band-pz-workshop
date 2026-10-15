@@ -1,0 +1,5 @@
+# Keep Windows scripts byte-exact (BOM + CRLF matter for Windows PowerShell 5.1 and cmd).
+*.ps1 -text
+*.cmd -text
+*.txt -text
+*.ini -text

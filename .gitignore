@@ -1,0 +1,11 @@
+# Private: the Deck/WSL server setup, passwords, crash dumps, build output
+deck/
+server/
+dumps/
+dist/
+*.local
+*.rdp
+*.log
+install_old.ps1
+CLAUDE.md
+__pycache__/
