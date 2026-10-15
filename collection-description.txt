@@ -3,7 +3,7 @@ A large Build 42 mod set built for multiplayer: Project Viewpoint (first/third-p
 
 [h2]🟢 Playing on our server? One installer does everything[/h2]
 [list]
-[*]Download the latest [b]PZ-3dpz-client.zip[/b]: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest]https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest[/url]
+[*]Download the latest [b]PZ-3dpz-client.zip[/b]: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest/download/PZ-3dpz-client.zip]PZ-3dpz-client.zip[/url] (all versions: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases]Releases[/url])
 [*]Start Steam, close the game, unpack the archive and double-click [b]Install.cmd[/b].
 [*]Pick a language, then [b]1 – First install[/b].
 [*]Wait until Steam finishes the downloads (Library > Downloads), start the game and join.
@@ -32,7 +32,7 @@ Report them in our Discord: https://discord.gg/rybrP9DPhh
 
 [h2]🟢 Играешь на нашем сервере? Всё делает один установщик[/h2]
 [list]
-[*]Скачай последний [b]PZ-3dpz-client.zip[/b]: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest]https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest[/url]
+[*]Скачай последний [b]PZ-3dpz-client.zip[/b]: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest/download/PZ-3dpz-client.zip]PZ-3dpz-client.zip[/url] (all versions: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases]Releases[/url])
 [*]Запусти Steam, закрой игру, распакуй архив и дважды щёлкни [b]Install.cmd[/b].
 [*]Выбери язык, затем [b]1 – Первый запуск[/b].
 [*]Дождись, пока Steam докачает моды (Библиотека > Загрузки), запускай игру и заходи.
