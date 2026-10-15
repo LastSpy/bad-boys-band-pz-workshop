@@ -10,7 +10,7 @@ if (-not $gh) { $gh = 'C:\Program Files\GitHub CLI\gh.exe' }
 & "$PSScriptRoot\Build-ClientPack.ps1" -ServerName $ServerName
 $tag = 'v' + (Get-Date -Format 'yyyy.MM.dd')
 if (& $gh release view $tag 2>$null) { $tag += '-' + (Get-Date -Format 'HHmm') }
-git add -A
+git add -- client server-config
 git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) { git commit -q -m "Release $tag`n`n$Notes"; git push -q }
 $body = "**Download PZ-3dpz-client.zip**, unpack, run Install.cmd, choose **2 - Update** (or **1** on a new PC).`n`n$Notes"
