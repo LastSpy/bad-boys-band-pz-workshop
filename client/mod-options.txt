@@ -1,0 +1,4 @@
+# Mod options the installer sets in Zomboid\Lua\modOptions.ini (the game's own format: type|group|option|value).
+# First install sets all of them; Update sets only ones added since the player's last install,
+# so a setting the player changed in the game later is not reverted.
+tickbox|aparosa_pz3dMinimap_alarm|alarm|false # Minimap: Off-Screen Zombie Alarm off - Viewpoint Threat Detector does this

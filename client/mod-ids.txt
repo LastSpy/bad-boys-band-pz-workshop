@@ -239,7 +239,6 @@ VanillaOutfitsExpanded
 [J&G] Desert Multicam Uniform
 ammomaker
 aparosa_pz3dMinimap
-aparosa_pz3dBeams
 ArmoredVests
 B42Horticulture
 B42Survival

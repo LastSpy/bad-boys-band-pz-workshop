@@ -3,3 +3,4 @@
 3807334881 # pz3d: second 3D renderer, conflicts with Project Viewpoint
 pz3d # pz3d (local copy, e.g. Zomboid\Workshop\pz3d-standalone): conflicts with Project Viewpoint
 3810103905 # pz3dfix [Deprecated]: patches pz3d
+3813889000 # PZ3D Marking Beams: built into Project Viewpoint / PZ3D Minimap (3810179295); both draw the same beams

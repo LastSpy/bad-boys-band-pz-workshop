@@ -6,6 +6,7 @@
   3. Кладёт эти файлы рядом с ProjectZomboid64.exe и прописывает их в ProjectZomboid64.site.json.
   4. Ставит PZ_Optimization (замена классов игры) его собственным установщиком.
   5. Включает в игре ровно те моды, что на сервере (Zomboid\mods\default.txt, mod-ids.txt).
+  6. Выставляет настройки модов из mod-options.txt (Zomboid\Lua\modOptions.ini).
 
   Запуск: двойной клик по Install.cmd. Steam должен быть запущен, игра закрыта.
   При запуске - меню: Первый запуск / Обновить / Настройки (последние два - если уже ставили).
@@ -579,9 +580,38 @@ else {
     }
 }
 
+# ---------------------------------------------------------------- mod options
+# mod-options.txt holds lines in the game's own format (type|group|option|value). First install sets
+# all of them; Update only those added since the last install, so a setting the player changed in
+# the game afterwards is not reverted. The game rewrites this file on exit - it is closed here.
+Step (L 'Настройки модов (Zomboid\Lua\modOptions.ini)' 'Mod options (Zomboid\Lua\modOptions.ini)')
+$presets = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'mod-options.txt') -ErrorAction SilentlyContinue |
+    ForEach-Object { ($_ -replace '\s+#.*$', '').Trim() } | Where-Object { $_ -match '^[^#|]+\|[^|]+\|[^|]+\|' })
+$appliedBefore = @(if ($state -and $state.appliedOptions) { $state.appliedOptions })
+$todo = @(if ($Mode -eq 'Update') { $presets | Where-Object { $appliedBefore -notcontains $_ } } else { $presets })
+if (-not $todo.Count) { Info (L 'без изменений' 'unchanged') }
+else {
+    $optFile = Join-Path $env:USERPROFILE 'Zomboid\Lua\modOptions.ini'
+    $optLines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path -LiteralPath $optFile) { $optLines.AddRange([string[]][IO.File]::ReadAllLines($optFile)) }
+    foreach ($pr in $todo) {
+        $key = (($pr -split '\|')[0..2] -join '|') + '|'
+        $at = -1
+        for ($i = 0; $i -lt $optLines.Count; $i++) { if ($optLines[$i].StartsWith($key)) { $at = $i; break } }
+        if ($at -ge 0) { $optLines[$at] = $pr } else { $optLines.Add($pr) }
+        Info $(if ($DryRun) { (L "будет: $pr" "will set: $pr") } else { (L "выставлено: $pr" "set: $pr") })
+    }
+    if (-not $DryRun) {
+        New-Item -ItemType Directory -Path (Split-Path $optFile) -Force | Out-Null
+        if (Test-Path -LiteralPath $optFile) { Copy-Item -LiteralPath $optFile -Destination ($optFile + '.bak-' + (Get-Date -Format 'yyyyMMdd')) -Force }
+        [IO.File]::WriteAllText($optFile, (($optLines -join "`r`n") + "`r`n"), (New-Object Text.UTF8Encoding($false)))
+    }
+}
+$appliedOptions = @(@($appliedBefore) + @($todo) | Where-Object { $_ } | Select-Object -Unique)
+
 $installed = @(@(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'workshop-ids.txt') -ErrorAction SilentlyContinue) + $RequiredIds |
     ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Unique)
-Save-State @{ items = $installed; heapGB = $heap; pzOptimization = [bool]$wantPzo; mode = $Mode; lang = $Lang }
+Save-State @{ items = $installed; heapGB = $heap; pzOptimization = [bool]$wantPzo; mode = $Mode; lang = $Lang; appliedOptions = $appliedOptions }
 
 Write-Host ''
 if ($DryRun) { Write-Host (L 'Пробный прогон: ничего не изменено.' 'Dry run: nothing changed.') -ForegroundColor Green }
