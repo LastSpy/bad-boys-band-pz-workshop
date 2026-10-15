@@ -7,6 +7,7 @@
   4. Ставит PZ_Optimization (замена классов игры) его собственным установщиком.
   5. Включает в игре ровно те моды, что на сервере (Zomboid\mods\default.txt, mod-ids.txt).
   6. Выставляет настройки модов из mod-options.txt (Zomboid\Lua\modOptions.ini).
+  7. Убирает из Zomboid\Lua\layout.ini окна, сохранённые с размером больше экрана.
 
   Запуск: двойной клик по Install.cmd. Steam должен быть запущен, игра закрыта.
   При запуске - меню: Первый запуск / Обновить / Настройки (последние два - если уже ставили).
@@ -608,6 +609,33 @@ else {
     }
 }
 $appliedOptions = @(@($appliedBefore) + @($todo) | Where-Object { $_ } | Select-Object -Unique)
+
+# ---------------------------------------------------------------- window layouts
+# Zomboid\Lua\layout.ini keeps window positions per resolution ([2560x1440] ...). A window that once
+# saved a size bigger than the screen (seen with the radio/TV window: height=390176) is restored
+# off-screen and looks like it never opens. Such lines are dropped; the game then uses its default.
+Step (L 'Окна интерфейса (Zomboid\Lua\layout.ini)' 'UI windows (Zomboid\Lua\layout.ini)')
+$layoutFile = Join-Path $env:USERPROFILE 'Zomboid\Lua\layout.ini'
+if (-not (Test-Path -LiteralPath $layoutFile)) { Info (L 'файла нет - нечего чинить' 'no file - nothing to fix') }
+else {
+    $kept = New-Object System.Collections.Generic.List[string]
+    $bad = 0; $scrW = 0; $scrH = 0
+    foreach ($ln in [IO.File]::ReadAllLines($layoutFile)) {
+        if ($ln -match '^\[(\d+)x(\d+)\]') { $scrW = [int]$Matches[1]; $scrH = [int]$Matches[2]; $kept.Add($ln); continue }
+        $w = if ($ln -match '\bwidth=(-?\d+)') { [long]$Matches[1] } else { 0 }
+        $h = if ($ln -match '\bheight=(-?\d+)') { [long]$Matches[1] } else { 0 }
+        if ($scrW -gt 0 -and ($w -gt $scrW -or $h -gt $scrH)) {
+            $bad++
+            Info (L "убрано окно больше экрана: $(($ln -split ' ')[0]) ${w}x$h при ${scrW}x$scrH" "dropped a window bigger than the screen: $(($ln -split ' ')[0]) ${w}x$h at ${scrW}x$scrH")
+        }
+        else { $kept.Add($ln) }
+    }
+    if (-not $bad) { Info (L 'без изменений' 'unchanged') }
+    elseif (-not $DryRun) {
+        Copy-Item -LiteralPath $layoutFile -Destination ($layoutFile + '.bak-' + (Get-Date -Format 'yyyyMMdd')) -Force
+        [IO.File]::WriteAllText($layoutFile, (($kept -join "`r`n") + "`r`n"), (New-Object Text.UTF8Encoding($false)))
+    }
+}
 
 $installed = @(@(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'workshop-ids.txt') -ErrorAction SilentlyContinue) + $RequiredIds |
     ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Unique)
