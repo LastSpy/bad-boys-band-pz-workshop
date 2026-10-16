@@ -202,7 +202,6 @@ ProjectALifeNPCsRU_Easy
 Viewpoint3DTracerFix
 ViewpointBloodFX
 ViewpointImmersiveEffects
-ViewpointTurbo
 YAPZLib
 VMZNEW
 VVR
@@ -245,7 +244,6 @@ CheckthePapers
 ClothingLine
 ComputerModkum
 CVI
-CVLS
 DeadMansDossier
 DeltaSeries
 DRAW_ON_MAP
