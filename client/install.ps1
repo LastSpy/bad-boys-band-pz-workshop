@@ -476,14 +476,23 @@ if (-not ($arguments | Where-Object { $_ -match '(?i)^-agentlib:zbNative' })) { 
 $ramGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 $heapChoices = [ordered]@{
     12 = (L 'для ПК с 32 ГБ памяти и больше' 'for PCs with 32 GB of RAM or more')
-    10 = (L 'для ПК с 24 ГБ памяти и больше' 'for PCs with 24 GB of RAM or more')
-    8  = (L 'для ПК с 16 ГБ памяти и больше' 'for PCs with 16 GB of RAM or more')
-    6  = (L 'для ПК с меньше чем 16 ГБ (минимум для этой сборки модов)' 'for PCs with less than 16 GB (minimum for this mod set)')
+    10 = (L 'для ПК с 32 ГБ, если открыто много других программ' 'for PCs with 32 GB when many other programs are open')
+    8  = (L 'для ПК с 24 ГБ памяти' 'for PCs with 24 GB of RAM')
+    6  = (L 'для ПК с 16 ГБ и меньше (минимум для этой сборки модов)' 'for PCs with 16 GB or less (minimum for this mod set)')
 }
-$recommended = if ($ramGB -ge 32) { 12 } elseif ($ramGB -ge 24) { 10 } elseif ($ramGB -ge 16) { 8 } else { 6 }
+# Viewpoint, textures and native libraries take several GB on top of this limit: on a 16 GB laptop
+# with -Xmx8g the game reached 18-19 GB commit and crashed in native code (2026-10-17).
+$recommended = if ($ramGB -ge 32) { 12 } elseif ($ramGB -ge 24) { 8 } else { 6 }
 $current = @($arguments | Where-Object { $_ -match '^-Xmx' }) -join ' '
 if ($HeapGB) { $heap = $HeapGB }
-elseif ($Mode -eq 'Update' -and $state.heapGB) { $heap = [int]$state.heapGB }   # keep the player's choice on updates
+elseif ($Mode -eq 'Update' -and $state.heapGB) {
+    # keep the player's choice on updates, but offer to lower a value above today's recommendation
+    $heap = [int]$state.heapGB
+    if ($heap -gt $recommended -and -not ($DryRun -or $Yes)) {
+        Warn (L "Игре сейчас отдано $heap ГБ, а для ПК с $ramGB ГБ рекомендуется $recommended ГБ: при нехватке памяти игра виснет и вылетает." "The game now gets $heap GB; for a PC with $ramGB GB, $recommended GB is recommended: short of memory, the game hangs and crashes.")
+        if ((Read-Host (L "Снизить до $recommended ГБ? (Д/н)" "Lower it to $recommended GB? (Y/n)")) -notmatch '^(?i)(n|н|no|нет)$') { $heap = $recommended }
+    }
+}
 elseif ($DryRun -or $Yes) { $heap = $recommended }
 else {
     Info (L "Память компьютера: $ramGB ГБ. Сейчас для игры: $(if ($current) { $current } else { 'не задано' })." "PC memory: $ramGB GB. Game now gets: $(if ($current) { $current } else { 'not set' }).")
