@@ -26,6 +26,10 @@ from a conflict it found - and asks first. What is installed is recorded in Zomb
 
 Dry run, changes nothing: Install.cmd -DryRun
 
+The game crashed? Run Crash-Report.cmd right after the crash. It collects crash logs, game logs,
+Windows error events and PC details into PZ-crash-report-<date>.zip on the Desktop (reads only,
+no passwords). Send that zip to the server admin.
+
 
 Bad boys Band - установщик для сервера Project Zomboid (Build 42)
 =================================================================
@@ -54,3 +58,7 @@ Bad boys Band - установщик для сервера Project Zomboid (Buil
 найденного конфликта - и то с вопросом. Что установлено, записано в Zomboid\bbb-installer.json.
 
 Пробный прогон без изменений: Install.cmd -DryRun
+
+Игра вылетела? Сразу после вылета запустите Crash-Report.cmd. Он соберёт журналы вылетов, логи игры,
+ошибки из журнала Windows и сведения о ПК в PZ-crash-report-<дата>.zip на рабочем столе (только
+читает, паролей не берёт). Отправьте этот архив администратору сервера.
