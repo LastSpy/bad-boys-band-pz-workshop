@@ -323,7 +323,6 @@ ViewpointFences3D
 ProjectViewpointShelves
 PoolPit
 WashFix
-WeightReduction
 FirstAidVHSTapes
 w_betterwringing
 CasualtiesUndead
