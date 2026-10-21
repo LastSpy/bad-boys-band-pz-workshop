@@ -317,6 +317,14 @@ try {
     $localRoot = Join-Path $env:USERPROFILE 'Zomboid\Workshop'
     foreach ($d in Get-ChildItem -LiteralPath $localRoot -Directory -ErrorAction SilentlyContinue) {
         if ($d.Name -eq 'ModTemplate') { continue }
+        # The game writes id=<Workshop item> into workshop.txt after an upload: a folder whose item is on
+        # the server is the upload source of that very mod (the player published it), not a conflict.
+        $wsTxt = Join-Path $d.FullName 'workshop.txt'
+        $published = if (Test-Path -LiteralPath $wsTxt) { [regex]::Match((Get-Content -LiteralPath $wsTxt -Raw), '(?m)^id=(\d+)').Groups[1].Value } else { '' }
+        if ($published -and $serverItems.ContainsKey($published)) {
+            Info (L "Исходник вашего мода $published ($($d.Name)) - не конфликт. Правки в нём загружайте в Workshop, иначе сервер не пустит." "Source of your mod $published ($($d.Name)) - not a conflict. Upload edits to the Workshop, or the server will not let you in.")
+            continue
+        }
         $why = Get-Clash '' $d.FullName
         if ($why.Count) { $conflicts += [pscustomobject]@{ Kind = 'local'; Id = $d.Name; Path = $d.FullName; Why = $why -join '; ' } }
     }
