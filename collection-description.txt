@@ -1,55 +1,73 @@
 [h1]Bad boys Band — B42 + MP[/h1]
-A large Build 42 mod set built for multiplayer: Project Viewpoint (first/third-person 3D), Project A-Life NPCs, hundreds of vehicles, clothing, crafting, cooking and QoL mods. Made for Project Zomboid [b]42.21[/b].
+A large, tested Build 42 mod set that runs together without conflicts: Project Viewpoint (first/third-person 3D), Project A-Life NPCs, hundreds of vehicles, clothing, crafting, cooking, maps and QoL mods. Made for Project Zomboid [b]42.21[/b]. Use it for your own dedicated server, co-op with friends or single player.
 
-[h2]🟢 Playing on our server? One installer does everything[/h2]
+[h2]🟢 Get the whole set running in minutes[/h2]
 [list]
 [*]Download the latest [b]PZ-3dpz-client.zip[/b]: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest/download/PZ-3dpz-client.zip]PZ-3dpz-client.zip[/url] (all versions: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases]Releases[/url])
 [*]Start Steam, close the game, unpack the archive and double-click [b]Install.cmd[/b].
 [*]Pick a language, then [b]1 – First install[/b].
-[*]Wait until Steam finishes the downloads (Library > Downloads), start the game and join.
+[*]Wait until Steam finishes the downloads (Library > Downloads), then start the game: the mods are already enabled.
 [/list]
-The installer subscribes you to every mod of the server, removes nothing of yours, checks for mods that clash with this set, copies the files that ZombieBuddy needs into the game folder, sets the game memory (you choose: 12 / 10 / 8 / 6 GB), offers PZ_Optimization and enables exactly the server's mods — no more guessing what to turn on.
-[b]Later:[/b] run it again and choose [b]2 – Update[/b] when the mod list changes, or [b]3 – Settings[/b] to install or remove PZ_Optimization.
+The installer subscribes you to every mod of the set, removes nothing of yours, checks for mods that clash with it, copies the files that ZombieBuddy needs into the game folder, sets the game memory (12 / 10 / 8 / 6 GB, it suggests the right one for your PC), offers PZ_Optimization and enables exactly the mods of the set — no more guessing what to turn on.
+[b]Later:[/b] run it again and choose [b]2 – Update[/b] when the set changes, or [b]3 – Settings[/b] to install or remove PZ_Optimization.
+
+[h2]Hosting a server with this set?[/h2]
+[list]
+[*]The ready [b]Mods=[/b], [b]WorkshopItems=[/b] and [b]Map=[/b] lines for your server .ini are in [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/tree/main/server-config]server-config[/url] of the repository — copy them, no load-order puzzle.
+[*]Your players only need the installer above: it enables the same mods your server runs.
+[*]The mods that run Java on the server (True Ballistics, True Weathers Gameplay, PZ3D Minimap) need ZombieBuddy installed on the server too — see the ZombieBuddy page.
+[/list]
 
 [h2]Good to know[/h2]
 [list]
 [*]Subscribing to this collection alone is not enough: some mods need files in the game folder and a launch setting. The installer does it for you.
 [*][b]PZ_Optimization[/b] replaces game classes for fewer stutters and faster chunk loading. It left the Steam Workshop, so the installer takes it from the author's GitHub ([url=https://github.com/xD3I/PZ_Optimization]xD3I/PZ_Optimization[/url]); later updates come from the game's main menu (PZ OPTIMIZATION > UPDATE). Its author has not tested it in multiplayer — remove it under Settings if anything looks wrong.
+[*]Several mods here are Java mods (Viewpoint and its add-ons, ZombieBuddy). The developers do not support Java mods and a game update can break them until their authors catch up — keep the game on [b]42.21[/b] until the set is updated.
 [*]If the game crashes with Viewpoint upscaling set to DLSS, switch the upscaler to another mode.
 [*]If you use RivaTuner / MSI Afterburner overlay and the game crashes at start, disable RTSS hooking for ProjectZomboid64.exe.
+[*]The game crashed? Run [b]Crash-Report.cmd[/b] from the installer folder: it collects crash logs, game logs and PC details into one zip on your Desktop.
 [/list]
 
-[h2]Running your own server?[/h2]
-Mods, WorkshopItems and Map lines for your server .ini are in the repository: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop]https://github.com/LastSpy/bad-boys-band-pz-workshop[/url]
+[h2]Want to play with us?[/h2]
+We run this exact set on our own server, [b]PZ3D - LastLegion[/b]. Ask in our Discord for the address: https://discord.gg/rybrP9DPhh
 
 [h2]Problems?[/h2]
-Report them in our Discord: https://discord.gg/rybrP9DPhh
+Report them in our Discord (link above) and attach the Crash-Report zip if the game crashed.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [h1]Bad boys Band — B42 + MP (русский)[/h1]
-Большая сборка модов Build 42 для мультиплеера: Project Viewpoint (3D от первого/третьего лица), NPC Project A-Life, сотни машин, одежда, крафт, готовка и удобства. Для Project Zomboid [b]42.21[/b].
+Большая проверенная сборка модов Build 42, которые работают вместе без конфликтов: Project Viewpoint (3D от первого/третьего лица), NPC Project A-Life, сотни машин, одежда, крафт, готовка, карты и удобства. Для Project Zomboid [b]42.21[/b]. Подходит для своего выделенного сервера, кооператива с друзьями и одиночной игры.
 
-[h2]🟢 Играешь на нашем сервере? Всё делает один установщик[/h2]
+[h2]🟢 Вся сборка за несколько минут[/h2]
 [list]
 [*]Скачай последний [b]PZ-3dpz-client.zip[/b]: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases/latest/download/PZ-3dpz-client.zip]PZ-3dpz-client.zip[/url] (все версии: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/releases]Releases[/url])
 [*]Запусти Steam, закрой игру, распакуй архив и дважды щёлкни [b]Install.cmd[/b].
 [*]Выбери язык, затем [b]1 – Первый запуск[/b].
-[*]Дождись, пока Steam докачает моды (Библиотека > Загрузки), запускай игру и заходи.
+[*]Дождись, пока Steam докачает моды (Библиотека > Загрузки), и запускай игру: моды уже включены.
 [/list]
-Установщик подписывает на все моды сервера, ничего твоего не удаляет, проверяет моды, которые конфликтуют со сборкой, кладёт в папку игры файлы для ZombieBuddy, настраивает память игры (выбираешь сам: 12 / 10 / 8 / 6 ГБ), предлагает PZ_Optimization и включает ровно те моды, что на сервере — гадать, что включать, не нужно.
-[b]Потом:[/b] запусти снова и выбери [b]2 – Обновить[/b], когда меняется список модов, или [b]3 – Настройки[/b], чтобы поставить или убрать PZ_Optimization.
+Установщик подписывает на все моды сборки, ничего твоего не удаляет, проверяет моды, которые с ней конфликтуют, кладёт в папку игры файлы для ZombieBuddy, настраивает память игры (12 / 10 / 8 / 6 ГБ, сам подскажет, сколько нужно твоему ПК), предлагает PZ_Optimization и включает ровно моды сборки — гадать, что включать, не нужно.
+[b]Потом:[/b] запусти снова и выбери [b]2 – Обновить[/b], когда сборка меняется, или [b]3 – Настройки[/b], чтобы поставить или убрать PZ_Optimization.
+
+[h2]Делаешь сервер с этой сборкой?[/h2]
+[list]
+[*]Готовые строки [b]Mods=[/b], [b]WorkshopItems=[/b] и [b]Map=[/b] для .ini сервера лежат в папке [url=https://github.com/LastSpy/bad-boys-band-pz-workshop/tree/main/server-config]server-config[/url] репозитория — просто скопируй, порядок загрузки уже выверен.
+[*]Игрокам достаточно установщика выше: он включит те же моды, что на твоём сервере.
+[*]Моды, которые запускают Java на сервере (True Ballistics, True Weathers Gameplay, PZ3D Minimap), требуют ZombieBuddy и на сервере — смотри страницу ZombieBuddy.
+[/list]
 
 [h2]Полезно знать[/h2]
 [list]
 [*]Одной подписки на коллекцию мало: части модов нужны файлы в папке игры и параметр запуска. Это делает установщик.
 [*][b]PZ_Optimization[/b] подменяет классы игры: меньше фризов, быстрее подгрузка чанков. Из мастерской он ушёл, поэтому установщик берёт его с GitHub автора ([url=https://github.com/xD3I/PZ_Optimization]xD3I/PZ_Optimization[/url]); обновления потом — в главном меню игры (PZ OPTIMIZATION > UPDATE). Автор не проверял его в мультиплеере — если что-то не так, удали в Настройках.
+[*]Часть модов — Java-моды (Viewpoint и дополнения к нему, ZombieBuddy). Разработчики игры их не поддерживают, и обновление игры может сломать их, пока авторы не обновятся, — держи игру на [b]42.21[/b], пока не обновится сборка.
 [*]Если игра падает с апскейлом Viewpoint в режиме DLSS — переключи апскейл на другой режим.
 [*]Если стоит оверлей RivaTuner / MSI Afterburner и игра падает на старте — выключи перехват RTSS для ProjectZomboid64.exe.
+[*]Игра вылетела? Запусти [b]Crash-Report.cmd[/b] из папки установщика: он соберёт журналы вылета, логи игры и сведения о ПК в один архив на рабочем столе.
 [/list]
 
-[h2]Свой сервер?[/h2]
-Строки Mods, WorkshopItems и Map для .ini сервера — в репозитории: [url=https://github.com/LastSpy/bad-boys-band-pz-workshop]https://github.com/LastSpy/bad-boys-band-pz-workshop[/url]
+[h2]Хочешь поиграть с нами?[/h2]
+Эта же сборка стоит на нашем сервере [b]PZ3D - LastLegion[/b]. Адрес спроси в нашем Discord: https://discord.gg/rybrP9DPhh
 
 [h2]Проблемы?[/h2]
-Пиши в наш Discord: https://discord.gg/rybrP9DPhh
+Пиши в наш Discord (ссылка выше) и приложи архив Crash-Report, если игра вылетала.
