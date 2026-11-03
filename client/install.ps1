@@ -37,8 +37,10 @@ $AppId = 108600
 # Mods that need files beside the game EXE. Each entry: workshop id, file name, where it goes.
 $IdZombieBuddy     = [uint64]3619862853   # original ZombieBuddy: zbNative.dll
 $IdZombieBuddyExt  = [uint64]3807686870   # ZombieBuddy Extensions: replacement ZombieBuddy.jar
-$IdPzOptimization  = [uint64]3805285544   # PZ_Optimization: game class overrides, installed by its own install.ps1
-$RequiredIds = @($IdZombieBuddy, $IdZombieBuddyExt, $IdPzOptimization)
+$RequiredIds = @($IdZombieBuddy, $IdZombieBuddyExt)
+# PZ_Optimization (game class overrides) left the Steam Workshop (item 3805285544 gone, 2026-11). It is installed from
+# the author's GitHub releases by the author's own install.ps1 and then updates itself from the game's main menu.
+$PzoRepo = 'xD3I/PZ_Optimization'
 
 function Info($text) { Write-Host $text }
 function Step($text) { Write-Host ''; Write-Host "== $text" -ForegroundColor Cyan }
@@ -101,17 +103,38 @@ function Read-State {
     try { Get-Content -LiteralPath $StateFile -Raw | ConvertFrom-Json } catch { Warn (L "Не читается $StateFile - считаю, что установки не было." "Cannot read $StateFile - treating it as not installed."); $null }
 }
 $state = Read-State
-$PzoWorkshop = Join-Path (Split-Path (Split-Path $GameDirectory)) "workshop\content\108600\$IdPzOptimization"
 function Test-PzoInstalled { Test-Path -LiteralPath (Join-Path $GameDirectory 'pzopt-installed.txt') }
-# Runs PZ_Optimization's own install.ps1 (Workshop copy, or the copy it keeps in the game folder).
-function Invoke-Pzo([ValidateSet('Install', 'Uninstall', 'Status')][string]$Action, [string]$ModFolder) {
-    $roots = @($ModFolder, $PzoWorkshop, (Join-Path $GameDirectory 'pzopt\uninstall')) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
-    $script = $roots | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -Filter install.ps1 -ErrorAction SilentlyContinue } |
-        Where-Object { $Action -ne 'Install' -or (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'pzopt-classes')) } | Select-Object -First 1
-    if (-not $script) { Warn (L 'Не найден установщик PZ_Optimization (мод не скачан?).' 'PZ_Optimization installer not found (mod not downloaded?).'); return $false }
-    $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $script.FullName, '-Dir', $GameDirectory)
+# The author's install.ps1 from the newest GitHub release, saved to %TEMP%. $null when GitHub is unreachable.
+function Get-PzoScript {
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+        $script = Join-Path $env:TEMP 'bbb-pzopt-install.ps1'
+        Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/$PzoRepo/releases/latest/download/install.ps1" -OutFile $script
+        $script
+    } catch { Warn ((L 'GitHub недоступен: ' 'GitHub unreachable: ') + $_.Exception.Message); $null }
+}
+# Newest release that has the classes for this game's revision (asset pzopt-<revision>-classes.zip).
+function Get-PzoTag([string]$script) {
+    $status = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -Dir $GameDirectory -Status 2>&1 | Out-String
+    $rev = [regex]::Match($status, 'game revision: (\w+)').Groups[1].Value
+    if (-not $rev) { Warn (L 'Не удалось узнать ревизию игры.' 'Could not read the game revision.'); return $null }
+    try {
+        $rels = Invoke-RestMethod -UseBasicParsing -Headers @{ Accept = 'application/vnd.github+json' } "https://api.github.com/repos/$PzoRepo/releases?per_page=50"
+    } catch { Warn ((L 'GitHub недоступен: ' 'GitHub unreachable: ') + $_.Exception.Message); return $null }
+    $rel = $rels | Sort-Object published_at -Descending | Where-Object { $_.assets.name -contains "pzopt-$rev-classes.zip" } | Select-Object -First 1
+    if (-not $rel) { Warn (L "Для этой версии игры ($rev) сборки PZ_Optimization ещё нет." "No PZ_Optimization build for this game version ($rev) yet."); return $null }
+    Info (L "PZ_Optimization: релиз $($rel.tag_name) для ревизии игры $rev" "PZ_Optimization: release $($rel.tag_name) for game revision $rev")
+    $rel.tag_name
+}
+# Runs PZ_Optimization's own install.ps1. Install: newest GitHub release (-Tag, so a stale Steam Workshop copy left on
+# disk is never used). Uninstall/Status: the copy it keeps in the game folder, else the GitHub one.
+function Invoke-Pzo([ValidateSet('Install', 'Uninstall', 'Status')][string]$Action) {
+    $kept = Join-Path $GameDirectory 'pzopt\uninstall\install.ps1'
+    $script = if ($Action -ne 'Install' -and (Test-Path -LiteralPath $kept)) { $kept } else { Get-PzoScript }
+    if (-not $script) { return $false }
+    $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $script, '-Dir', $GameDirectory)
     switch ($Action) {
-        'Install'   { $a += @('-From', (Join-Path $script.DirectoryName 'pzopt-classes')) }
+        'Install'   { $tag = Get-PzoTag $script; if (-not $tag) { return $false }; $a += @('-Tag', $tag) }
         'Uninstall' { $a += '-Uninstall' }
         'Status'    { $a += '-Status' }
     }
@@ -561,9 +584,8 @@ else {
 # ---------------------------------------------------------------- PZ_Optimization
 # Replaces game classes (loose .class files in the game folder, "." comes first on the classpath).
 # Its own install.ps1 checks the game revision, records the files in pzopt-installed.txt and leaves
-# Uninstall-PZ-Optimization.cmd; -From uses the Workshop copy, so nothing is downloaded.
+# Uninstall-PZ-Optimization.cmd; the classes come from the author's GitHub release, updates from the game's menu.
 Step 'PZ_Optimization'
-$pzoDir = if ($folders -and $folders.ContainsKey($IdPzOptimization)) { $folders[$IdPzOptimization] } else { $null }
 if ($Mode -eq 'Update' -and $null -ne $state.pzOptimization) { $wantPzo = [bool]$state.pzOptimization }
 elseif ($DryRun -or $Yes) { $wantPzo = $true }
 else {
@@ -572,8 +594,10 @@ else {
     $wantPzo = (Read-Host (L 'Ставить PZ_Optimization? (Y/n)' 'Install PZ_Optimization? (Y/n)')) -notmatch (L '^(n|н)' '^(n|н)')
 }
 if (-not $wantPzo) { Info (L 'пропущено (выключено в настройках)' 'skipped (turned off in Settings)') }
-elseif ($DryRun) { [void](Invoke-Pzo 'Status' $pzoDir) }
-else { [void](Invoke-Pzo 'Install' $pzoDir) }
+elseif ($DryRun) { [void](Invoke-Pzo 'Status') }
+else {
+    if (Invoke-Pzo 'Install') { Info (L 'Обновления PZ_Optimization: главное меню игры > PZ OPTIMIZATION > UPDATE.' 'PZ_Optimization updates: game main menu > PZ OPTIMIZATION > UPDATE.') }
+}
 
 # ---------------------------------------------------------------- enabled mods
 # The game loads Java mods (Viewpoint, ZombieBuddy add-ons) at start-up from the main-menu mod list,

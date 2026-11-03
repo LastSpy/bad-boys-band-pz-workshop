@@ -246,7 +246,6 @@ ComputerModkum
 CVI
 DeadMansDossier
 DeltaSeries
-DRAW_ON_MAP
 dustinguished_cleaning_wipes
 Edwin'sCannedTent
 Edwin'sCannedTobaccoKit
@@ -266,7 +265,7 @@ Makedriedfruit
 Makedriedvegetable
 Makefruitinjar
 mapmodmanager
-MarzGuns
+GunsOfMarz
 MoreDamagedObjects
 Mushroomjar
 NepCanteenSlot
