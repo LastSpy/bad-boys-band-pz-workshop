@@ -14,7 +14,7 @@ The installer subscribes you to every mod of the server, removes nothing of your
 [h2]Good to know[/h2]
 [list]
 [*]Subscribing to this collection alone is not enough: some mods need files in the game folder and a launch setting. The installer does it for you.
-[*][b]PZ_Optimization[/b] (manual install) replaces game classes for fewer stutters and faster chunk loading. Its author has not tested it in multiplayer — remove it under Settings if anything looks wrong.
+[*][b]PZ_Optimization[/b] replaces game classes for fewer stutters and faster chunk loading. It left the Steam Workshop, so the installer takes it from the author's GitHub ([url=https://github.com/xD3I/PZ_Optimization]xD3I/PZ_Optimization[/url]); later updates come from the game's main menu (PZ OPTIMIZATION > UPDATE). Its author has not tested it in multiplayer — remove it under Settings if anything looks wrong.
 [*]If the game crashes with Viewpoint upscaling set to DLSS, switch the upscaler to another mode.
 [*]If you use RivaTuner / MSI Afterburner overlay and the game crashes at start, disable RTSS hooking for ProjectZomboid64.exe.
 [/list]
@@ -43,7 +43,7 @@ Report them in our Discord: https://discord.gg/rybrP9DPhh
 [h2]Полезно знать[/h2]
 [list]
 [*]Одной подписки на коллекцию мало: части модов нужны файлы в папке игры и параметр запуска. Это делает установщик.
-[*][b]PZ_Optimization[/b] (ручная установка) подменяет классы игры: меньше фризов, быстрее подгрузка чанков. Автор не проверял его в мультиплеере — если что-то не так, удали в Настройках.
+[*][b]PZ_Optimization[/b] подменяет классы игры: меньше фризов, быстрее подгрузка чанков. Из мастерской он ушёл, поэтому установщик берёт его с GitHub автора ([url=https://github.com/xD3I/PZ_Optimization]xD3I/PZ_Optimization[/url]); обновления потом — в главном меню игры (PZ OPTIMIZATION > UPDATE). Автор не проверял его в мультиплеере — если что-то не так, удали в Настройках.
 [*]Если игра падает с апскейлом Viewpoint в режиме DLSS — переключи апскейл на другой режим.
 [*]Если стоит оверлей RivaTuner / MSI Afterburner и игра падает на старте — выключи перехват RTSS для ProjectZomboid64.exe.
 [/list]
