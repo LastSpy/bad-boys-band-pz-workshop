@@ -1,0 +1,63 @@
+Topics for the collection's Discussions tab. Each block: the topic title, then the text to paste.
+After posting, pin the topics (Moderator Tools > Pin) so they stay on top. Steam BBCode works in the text.
+
+==================================================================================================
+TITLE: Problems, crashes and help / Проблемы, вылеты и помощь
+==================================================================================================
+[h2]Something went wrong? Post here[/h2]
+Write one message per problem and include:
+[list]
+[*]What happened and when: at start, in the main menu, while joining, in game (what you were doing).
+[*]Where you play: your own server, co-op, single player or our server.
+[*]Which installer version you used (the release name, for example v2026.11.03) and whether you ran [b]2 – Update[/b] after the last change.
+[*][b]If the game crashed:[/b] run [b]Crash-Report.cmd[/b] from the installer folder. It puts [b]PZ-crash-report-<date>.zip[/b] on your Desktop (crash logs, game logs, PC details; no passwords). Upload it to Google Drive or similar and post the link here.
+[/list]
+Before posting, check [b]Good to know[/b] in the collection description: DLSS in Viewpoint and the RTSS / MSI Afterburner overlay are the most common causes of crashes.
+
+[hr][/hr]
+
+[h2]Что-то пошло не так? Пиши сюда[/h2]
+Одна проблема — одно сообщение, и укажи:
+[list]
+[*]Что случилось и когда: при запуске, в главном меню, при входе на сервер, в игре (что делал).
+[*]Где играешь: свой сервер, кооператив, одиночная игра или наш сервер.
+[*]Какой версией установщика пользовался (название релиза, например v2026.11.03) и запускал ли [b]2 – Обновить[/b] после последнего изменения.
+[*][b]Если игра вылетела:[/b] запусти [b]Crash-Report.cmd[/b] из папки установщика. Он положит на рабочий стол [b]PZ-crash-report-<дата>.zip[/b] (журналы вылета, логи игры, сведения о ПК; паролей нет). Залей его на Google Диск или аналог и пришли ссылку сюда.
+[/list]
+Перед тем как писать, загляни в [b]Полезно знать[/b] в описании коллекции: чаще всего вылеты дают DLSS в Viewpoint и оверлей RTSS / MSI Afterburner.
+
+==================================================================================================
+TITLE: Play on our server PZ3D - LastLegion / Играть на нашем сервере
+==================================================================================================
+[h2]PZ3D - LastLegion[/h2]
+We run this exact collection on our own dedicated server.
+[list]
+[*][b]Address:[/b] <IP or domain>:16261   (fill in before posting)
+[*][b]How to join:[/b] install the set with the installer from the collection description, start the game, Join > Add server > enter the address above.
+[*][b]Restarts:[/b] every day at 05:00 server time (EET/EEST, UTC+2 / UTC+3), with a chat warning 5 and 1 minutes before when players are online; also after mod updates.
+[*][b]Mod versions:[/b] if the server says your mods do not match, run the installer again and choose [b]2 – Update[/b].
+[/list]
+Questions about the server — reply in this topic.
+
+[hr][/hr]
+
+[h2]PZ3D - LastLegion[/h2]
+Эта же сборка стоит на нашем выделенном сервере.
+[list]
+[*][b]Адрес:[/b] <IP или домен>:16261   (вписать перед публикацией)
+[*][b]Как зайти:[/b] поставь сборку установщиком из описания коллекции, запусти игру, «Подключиться» > «Добавить сервер» > введи адрес выше.
+[*][b]Перезапуски:[/b] каждый день в 05:00 по времени сервера (EET/EEST, UTC+2 / UTC+3), с предупреждением в чате за 5 и за 1 минуту, если кто-то онлайн; ещё — после обновлений модов.
+[*][b]Версии модов:[/b] если сервер пишет, что моды не совпадают, запусти установщик снова и выбери [b]2 – Обновить[/b].
+[/list]
+Вопросы по серверу — отвечай в этой теме.
+
+==================================================================================================
+TITLE: Mod suggestions / Предложения модов
+==================================================================================================
+[h2]Know a mod that fits this set?[/h2]
+Post the Workshop link and a few words on why. We check every suggestion for Build 42.21, multiplayer, conflicts with the set and load on weaker PCs before adding it. Mods that need Java (ZombieBuddy) are checked extra carefully.
+
+[hr][/hr]
+
+[h2]Знаешь мод, который подойдёт сборке?[/h2]
+Пришли ссылку на мастерскую и пару слов, зачем он. Каждое предложение мы проверяем на Build 42.21, мультиплеер, конфликты со сборкой и нагрузку на слабые ПК. Моды на Java (ZombieBuddy) проверяем особенно внимательно.

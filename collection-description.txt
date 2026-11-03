@@ -29,10 +29,10 @@ The installer subscribes you to every mod of the set, removes nothing of yours, 
 [/list]
 
 [h2]Want to play with us?[/h2]
-We run this exact set on our own server, [b]PZ3D - LastLegion[/b]. Ask in our Discord for the address: https://discord.gg/rybrP9DPhh
+We run this exact set on our own server, [b]PZ3D - LastLegion[/b]. The address and how to join are in the [b]Discussions[/b] tab of this collection: topic [i]Play on our server[/i].
 
-[h2]Problems?[/h2]
-Report them in our Discord (link above) and attach the Crash-Report zip if the game crashed.
+[h2]Problems or ideas?[/h2]
+Use the [b]Discussions[/b] tab of this collection: [i]Problems, crashes and help[/i] (attach the Crash-Report zip if the game crashed) and [i]Mod suggestions[/i].
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -67,7 +67,7 @@ Report them in our Discord (link above) and attach the Crash-Report zip if the g
 [/list]
 
 [h2]Хочешь поиграть с нами?[/h2]
-Эта же сборка стоит на нашем сервере [b]PZ3D - LastLegion[/b]. Адрес спроси в нашем Discord: https://discord.gg/rybrP9DPhh
+Эта же сборка стоит на нашем сервере [b]PZ3D - LastLegion[/b]. Адрес и как зайти — во вкладке [b]Обсуждения[/b] этой коллекции, тема [i]Играть на нашем сервере[/i].
 
-[h2]Проблемы?[/h2]
-Пиши в наш Discord (ссылка выше) и приложи архив Crash-Report, если игра вылетала.
+[h2]Проблемы или идеи?[/h2]
+Пиши во вкладке [b]Обсуждения[/b] этой коллекции: [i]Проблемы, вылеты и помощь[/i] (приложи архив Crash-Report, если игра вылетала) и [i]Предложения модов[/i].
