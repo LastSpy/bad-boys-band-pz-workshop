@@ -198,7 +198,6 @@ VehicleRepairOverhaul
 VehicleSalvageOverhaulB42
 ProjectALifeNPCs
 ProjectALifeNPCsRU_Easy
-3812396995/ALifeThreatAlert
 Viewpoint3DTracerFix
 ViewpointBloodFX
 ViewpointImmersiveEffects
