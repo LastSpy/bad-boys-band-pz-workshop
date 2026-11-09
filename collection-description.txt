@@ -14,7 +14,7 @@ Ready [b]Mods=[/b], [b]WorkshopItems=[/b] and [b]Map=[/b] lines for your .ini: [
 [h2]Good to know[/h2]
 [list]
 [*]Subscribing alone is not enough: some mods need files in the game folder. Use the installer.
-[*][b]PZ_Optimization[/b] (fewer stutters) left the Workshop; the installer takes it from [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url], updates come from the game menu. Untested in MP by its author. [b]Paused[/b] until its author releases a 42.22 build.
+[*][b]PZ_Optimization[/b] (fewer stutters) — [b]temporarily disabled until it is updated for 42.22[/b]; the installer removes the old build and installs it again once the update is out. It left the Workshop and comes from [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url]; untested in MP by its author.
 [*]Viewpoint and ZombieBuddy are Java mods: a game update can break them, after a game update wait until the set is updated (now: [b]42.22.2[/b]).
 [*]Crashes: switch Viewpoint upscaling away from DLSS; disable RTSS / MSI Afterburner hooking for ProjectZomboid64.exe; run [b]Crash-Report.cmd[/b] from the installer folder.
 [/list]
@@ -40,7 +40,7 @@ Our server [b]PZ3D - LastLegion[/b] runs this exact set. Address, help and mod s
 [h2]Полезно знать[/h2]
 [list]
 [*]Одной подписки мало: части модов нужны файлы в папке игры. Используй установщик.
-[*][b]PZ_Optimization[/b] (меньше фризов) ушёл из мастерской; установщик берёт его с [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url], обновления — из меню игры. Автор не проверял его в MP. [b]Пока не ставится[/b]: ждём сборку под 42.22.
+[*][b]PZ_Optimization[/b] (меньше фризов) — [b]временно отключён, пока не выйдет обновление под 42.22[/b]; установщик удаляет старую сборку и поставит его снова, когда обновление выйдет. Из мастерской он ушёл, берётся с [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url]; автор не проверял его в MP.
 [*]Viewpoint и ZombieBuddy — Java-моды: обновление игры может их сломать, после обновления игры дождись обновления сборки (сейчас: [b]42.22.2[/b]).
 [*]Вылеты: переключи апскейл Viewpoint с DLSS; выключи перехват RTSS / MSI Afterburner для ProjectZomboid64.exe; запусти [b]Crash-Report.cmd[/b] из папки установщика.
 [/list]
