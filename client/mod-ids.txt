@@ -182,7 +182,6 @@ RepairWallCracks_B42
 SandboxSettings
 SeedSeasonIndicator
 SmarterStorage
-STA_PryOpen
 stanks_suicide
 SwapIt
 SWMG
@@ -257,7 +256,6 @@ GasPumpIndicator
 immersive_hotwire
 JB_BugsInLights
 KnoxDetectionKit
-Ladders4220
 LEGION18
 LWBetterElectronics
 Makedriedfruit

@@ -41,6 +41,10 @@ $RequiredIds = @($IdZombieBuddy, $IdZombieBuddyExt)
 # PZ_Optimization (game class overrides) left the Steam Workshop (item 3805285544 gone, 2026-11). It is installed from
 # the author's GitHub releases by the author's own install.ps1 and then updates itself from the game's main menu.
 $PzoRepo = 'xD3I/PZ_Optimization'
+# $true while there is no PZ_Optimization build for the game version the server runs (42.22.2 since 2026-11-10):
+# the step then only removes a build left from the previous version (it can crash the updated game at start) and
+# keeps the player's choice, so "Update" installs it again once this is back to $false.
+$PzoPaused = $true
 
 function Info($text) { Write-Host $text }
 function Step($text) { Write-Host ''; Write-Host "== $text" -ForegroundColor Cyan }
@@ -586,14 +590,23 @@ else {
 # Its own install.ps1 checks the game revision, records the files in pzopt-installed.txt and leaves
 # Uninstall-PZ-Optimization.cmd; the classes come from the author's GitHub release, updates from the game's menu.
 Step 'PZ_Optimization'
-if ($Mode -eq 'Update' -and $null -ne $state.pzOptimization) { $wantPzo = [bool]$state.pzOptimization }
+if ($PzoPaused) {
+    $wantPzo = if ($state) { $state.pzOptimization } else { $null }
+    Info (L 'Временно не ставится: под эту версию игры сборки PZ_Optimization ещё нет.' 'Not installed for now: there is no PZ_Optimization build for this game version yet.')
+    if (Test-PzoInstalled) {
+        if ($DryRun) { Info (L 'будет удалена сборка для прошлой версии игры' 'would remove the build for the previous game version') }
+        elseif (Invoke-Pzo 'Uninstall') { Info (L 'Удалена сборка для прошлой версии игры (могла ронять игру при запуске).' 'Removed the build for the previous game version (it could crash the game at start).') }
+    }
+}
+elseif ($Mode -eq 'Update' -and $null -ne $state.pzOptimization) { $wantPzo = [bool]$state.pzOptimization }
 elseif ($DryRun -or $Yes) { $wantPzo = $true }
 else {
     Info (L 'PZ_Optimization заменяет часть классов игры: меньше фризов, быстрее подгружаются чанки.' 'PZ_Optimization replaces some game classes: fewer stutters, faster chunk loading.')
     Info (L 'Автор не проверял его в мультиплеере и с другими модами. Удалить можно в любой момент: Install.cmd > Настройки.' 'Its author has not tested it in multiplayer or with other mods. Remove it any time: Install.cmd > Settings.')
     $wantPzo = (Read-Host (L 'Ставить PZ_Optimization? (Y/n)' 'Install PZ_Optimization? (Y/n)')) -notmatch (L '^(n|н)' '^(n|н)')
 }
-if (-not $wantPzo) { Info (L 'пропущено (выключено в настройках)' 'skipped (turned off in Settings)') }
+if ($PzoPaused) { }
+elseif (-not $wantPzo) { Info (L 'пропущено (выключено в настройках)' 'skipped (turned off in Settings)') }
 elseif ($DryRun) { [void](Invoke-Pzo 'Status') }
 else {
     if (Invoke-Pzo 'Install') { Info (L 'Обновления PZ_Optimization: главное меню игры > PZ OPTIMIZATION > UPDATE.' 'PZ_Optimization updates: game main menu > PZ OPTIMIZATION > UPDATE.') }
@@ -680,7 +693,7 @@ else {
 
 $installed = @(@(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'workshop-ids.txt') -ErrorAction SilentlyContinue) + $RequiredIds |
     ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Unique)
-Save-State @{ items = $installed; heapGB = $heap; pzOptimization = [bool]$wantPzo; mode = $Mode; lang = $Lang; appliedOptions = $appliedOptions }
+Save-State @{ items = $installed; heapGB = $heap; pzOptimization = $(if ($null -eq $wantPzo) { $null } else { [bool]$wantPzo }); mode = $Mode; lang = $Lang; appliedOptions = $appliedOptions }
 
 Write-Host ''
 if ($DryRun) { Write-Host (L 'Пробный прогон: ничего не изменено.' 'Dry run: nothing changed.') -ForegroundColor Green }
