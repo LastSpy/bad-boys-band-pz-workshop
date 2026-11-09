@@ -1,5 +1,5 @@
 [h1]Bad boys Band — B42 + MP[/h1]
-A large, tested Build 42 mod set that runs together without conflicts: Project Viewpoint (3D first/third person), Project A-Life NPCs, hundreds of vehicles, clothing, crafting, cooking, maps and QoL. For Project Zomboid [b]42.21[/b]: your own server, co-op or single player.
+A large, tested Build 42 mod set that runs together without conflicts: Project Viewpoint (3D first/third person), Project A-Life NPCs, hundreds of vehicles, clothing, crafting, cooking, maps and QoL. For Project Zomboid [b]42.22.2[/b]: your own server, co-op or single player.
 
 [h2]🟢 The whole set in minutes[/h2]
 [list]
@@ -14,8 +14,8 @@ Ready [b]Mods=[/b], [b]WorkshopItems=[/b] and [b]Map=[/b] lines for your .ini: [
 [h2]Good to know[/h2]
 [list]
 [*]Subscribing alone is not enough: some mods need files in the game folder. Use the installer.
-[*][b]PZ_Optimization[/b] (fewer stutters) left the Workshop; the installer takes it from [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url], updates come from the game menu. Untested in MP by its author.
-[*]Viewpoint and ZombieBuddy are Java mods: a game update can break them, keep the game on [b]42.21[/b] until the set is updated.
+[*][b]PZ_Optimization[/b] (fewer stutters) left the Workshop; the installer takes it from [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url], updates come from the game menu. Untested in MP by its author. [b]Paused[/b] until its author releases a 42.22 build.
+[*]Viewpoint and ZombieBuddy are Java mods: a game update can break them, after a game update wait until the set is updated (now: [b]42.22.2[/b]).
 [*]Crashes: switch Viewpoint upscaling away from DLSS; disable RTSS / MSI Afterburner hooking for ProjectZomboid64.exe; run [b]Crash-Report.cmd[/b] from the installer folder.
 [/list]
 
@@ -25,7 +25,7 @@ Our server [b]PZ3D - LastLegion[/b] runs this exact set. Address, help and mod s
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [h1]Bad boys Band — B42 + MP (русский)[/h1]
-Большая проверенная сборка модов Build 42 без конфликтов: Project Viewpoint (3D от первого/третьего лица), NPC A-Life, сотни машин, одежда, крафт, готовка, карты и удобства. Для [b]42.21[/b]: свой сервер, кооператив или одиночная игра.
+Большая проверенная сборка модов Build 42 без конфликтов: Project Viewpoint (3D от первого/третьего лица), NPC A-Life, сотни машин, одежда, крафт, готовка, карты и удобства. Для [b]42.22.2[/b]: свой сервер, кооператив или одиночная игра.
 
 [h2]🟢 Вся сборка за несколько минут[/h2]
 [list]
@@ -40,8 +40,8 @@ Our server [b]PZ3D - LastLegion[/b] runs this exact set. Address, help and mod s
 [h2]Полезно знать[/h2]
 [list]
 [*]Одной подписки мало: части модов нужны файлы в папке игры. Используй установщик.
-[*][b]PZ_Optimization[/b] (меньше фризов) ушёл из мастерской; установщик берёт его с [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url], обновления — из меню игры. Автор не проверял его в MP.
-[*]Viewpoint и ZombieBuddy — Java-моды: обновление игры может их сломать, держи игру на [b]42.21[/b], пока сборка не обновится.
+[*][b]PZ_Optimization[/b] (меньше фризов) ушёл из мастерской; установщик берёт его с [url=https://github.com/xD3I/PZ_Optimization]GitHub[/url], обновления — из меню игры. Автор не проверял его в MP. [b]Пока не ставится[/b]: ждём сборку под 42.22.
+[*]Viewpoint и ZombieBuddy — Java-моды: обновление игры может их сломать, после обновления игры дождись обновления сборки (сейчас: [b]42.22.2[/b]).
 [*]Вылеты: переключи апскейл Viewpoint с DLSS; выключи перехват RTSS / MSI Afterburner для ProjectZomboid64.exe; запусти [b]Crash-Report.cmd[/b] из папки установщика.
 [/list]
 

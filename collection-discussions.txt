@@ -55,9 +55,9 @@ Questions about the server — reply in this topic.
 TITLE: Mod suggestions / Предложения модов
 ==================================================================================================
 [h2]Know a mod that fits this set?[/h2]
-Post the Workshop link and a few words on why. We check every suggestion for Build 42.21, multiplayer, conflicts with the set and load on weaker PCs before adding it. Mods that need Java (ZombieBuddy) are checked extra carefully.
+Post the Workshop link and a few words on why. We check every suggestion for Build 42.22.2, multiplayer, conflicts with the set and load on weaker PCs before adding it. Mods that need Java (ZombieBuddy) are checked extra carefully.
 
 [hr][/hr]
 
 [h2]Знаешь мод, который подойдёт сборке?[/h2]
-Пришли ссылку на мастерскую и пару слов, зачем он. Каждое предложение мы проверяем на Build 42.21, мультиплеер, конфликты со сборкой и нагрузку на слабые ПК. Моды на Java (ZombieBuddy) проверяем особенно внимательно.
+Пришли ссылку на мастерскую и пару слов, зачем он. Каждое предложение мы проверяем на Build 42.22.2, мультиплеер, конфликты со сборкой и нагрузку на слабые ПК. Моды на Java (ZombieBuddy) проверяем особенно внимательно.

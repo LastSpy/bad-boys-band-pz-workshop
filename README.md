@@ -1,6 +1,6 @@
 # Bad boys Band — Project Zomboid B42 + MP
 
-Installer and mod lists for the **Bad boys Band** Project Zomboid server (Build 42.21).
+Installer and mod lists for the **Bad boys Band** Project Zomboid server (Build 42.22.2).
 Steam collection: https://steamcommunity.com/sharedfiles/filedetails?id=2983549098
 
 ## Players
