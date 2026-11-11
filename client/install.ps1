@@ -44,7 +44,7 @@ $PzoRepo = 'xD3I/PZ_Optimization'
 # $true while there is no PZ_Optimization build for the game version the server runs (42.22.2 since 2026-11-10):
 # the step then only removes a build left from the previous version (it can crash the updated game at start) and
 # keeps the player's choice, so "Update" installs it again once this is back to $false.
-$PzoPaused = $true
+$PzoPaused = $false
 
 function Info($text) { Write-Host $text }
 function Step($text) { Write-Host ''; Write-Host "== $text" -ForegroundColor Cyan }
@@ -144,7 +144,26 @@ function Invoke-Pzo([ValidateSet('Install', 'Uninstall', 'Status')][string]$Acti
     }
     & powershell.exe @a | Out-Host
     if ($LASTEXITCODE -ne 0) { Warn (L "PZ_Optimization: код $LASTEXITCODE (см. сообщение выше)." "PZ_Optimization: exit code $LASTEXITCODE (see the message above)."); return $false }
+    if ($Action -ne 'Status') { Show-PzoLaunchOption $Action }
     $true
+}
+# Since 42.22 PZ_Optimization loads as a Java agent, and on Windows the game closes at once unless Steam starts it through
+# pzopt-launch.cmd. Steam keeps launch options in its own config and rewrites it while running, so the player pastes the
+# line (the author's install.ps1 also copies it to the clipboard). After an uninstall the option must be cleared again.
+function Show-PzoLaunchOption([string]$Action) {
+    $cmd = Join-Path $GameDirectory 'pzopt-launch.cmd'
+    if ($Action -eq 'Uninstall') {
+        Warn (L 'Если в Steam был параметр запуска с pzopt-launch.cmd - удалите его (Steam > Project Zomboid > Свойства > Общие > Параметры запуска), иначе игра не запустится.' 'If Steam has a launch option with pzopt-launch.cmd, clear it (Steam > Project Zomboid > Properties > General > Launch Options), or the game will not start.')
+        return
+    }
+    if (-not (Test-Path -LiteralPath $cmd)) { return }
+    $line = "`"$(Join-Path $env:SystemRoot 'System32\conhost.exe')`" --headless `"$cmd`" %command%"
+    Warn (L 'ОБЯЗАТЕЛЬНО: без этого параметра запуска игра с PZ_Optimization сразу закрывается.' 'REQUIRED: without this launch option the game closes at once with PZ_Optimization.')
+    Info (L 'Steam > правый клик по Project Zomboid > Свойства > Общие > Параметры запуска, вставьте строку (она уже в буфере обмена);' 'Steam > right-click Project Zomboid > Properties > General > Launch Options, paste the line (it is on the clipboard);')
+    Info (L 'если там уже были параметры, оставьте их после %command%:' 'keep any options you already had after %command%:')
+    Write-Host "  $line" -ForegroundColor Cyan
+    if (-not $DryRun) { try { Set-Clipboard -Value $line } catch { } }
+    if (-not ($Yes -or $DryRun)) { [void](Read-Host (L 'Вставили? Нажмите Enter' 'Pasted it? Press Enter')) }
 }
 function Save-State($changes) {
     if ($DryRun) { return }
@@ -586,7 +605,7 @@ else {
 }
 
 # ---------------------------------------------------------------- PZ_Optimization
-# Replaces game classes (loose .class files in the game folder, "." comes first on the classpath).
+# Replaces game classes; since 42.22 (signed projectzomboid.jar) through a Java agent plus a Steam launch option.
 # Its own install.ps1 checks the game revision, records the files in pzopt-installed.txt and leaves
 # Uninstall-PZ-Optimization.cmd; the classes come from the author's GitHub release, updates from the game's menu.
 Step 'PZ_Optimization'

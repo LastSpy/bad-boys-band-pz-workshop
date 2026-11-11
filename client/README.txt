@@ -19,7 +19,8 @@ What the installer does:
 - sets up the game launch (ProjectZomboid64.site.json) and asks how much memory to give the game;
 - optionally installs PZ_Optimization (fewer stutters, faster map loading) - from its author's GitHub
   (github.com/xD3I/PZ_Optimization), it left the Workshop; later updates: game main menu > PZ OPTIMIZATION > UPDATE;
-  PAUSED for game 42.22.2 until its author releases a build for it (the installer removes the old 42.21 build);
+  since game 42.22 it NEEDS a Steam launch option (Properties > General > Launch Options), or the game closes at once:
+  the installer shows the line and copies it to the clipboard; clear it again if you remove PZ_Optimization;
 - enables exactly the server's mods in the game (Zomboid\mods\default.txt; the previous list is
   kept next to it as .bak-DATE).
 
@@ -54,7 +55,8 @@ Bad boys Band - установщик для сервера Project Zomboid (Buil
 - настраивает запуск игры (ProjectZomboid64.site.json) и спрашивает, сколько памяти ей отдать;
 - по желанию ставит PZ_Optimization (меньше фризов, быстрее подгрузка карты) - с GitHub автора
   (github.com/xD3I/PZ_Optimization), из мастерской он ушёл; обновления потом: главное меню игры > PZ OPTIMIZATION > UPDATE;
-  ВРЕМЕННО НЕ СТАВИТСЯ для игры 42.22.2, пока автор не выпустит сборку под неё (старую сборку для 42.21 установщик удаляет);
+  с игры 42.22 ему ОБЯЗАТЕЛЕН параметр запуска в Steam (Свойства > Общие > Параметры запуска), иначе игра сразу закрывается:
+  установщик покажет строку и скопирует её в буфер обмена; если удалите PZ_Optimization - сотрите параметр;
 - включает в игре ровно те моды, что на сервере (Zomboid\mods\default.txt; прежний список
   сохраняется рядом с расширением .bak-ДАТА).
 
