@@ -107,6 +107,25 @@ function Read-State {
     try { Get-Content -LiteralPath $StateFile -Raw | ConvertFrom-Json } catch { Warn (L "Не читается $StateFile - считаю, что установки не было." "Cannot read $StateFile - treating it as not installed."); $null }
 }
 $state = Read-State
+# Tab-indented JSON, same style as the game's own ProjectZomboid64.json.
+function ConvertTo-TabJson($o, [int]$lvl = 0) {
+    $t = "`t" * ($lvl + 1); $tc = "`t" * $lvl
+    if ($null -eq $o) { return 'null' }
+    if ($o -is [string]) { return '"' + ($o.Replace('\', '\\').Replace('"', '\"')) + '"' }
+    if ($o -is [bool]) { return $o.ToString().ToLower() }
+    if ($o -is [array]) {
+        if ($o.Count -eq 0) { return '[]' }
+        $items = foreach ($i in $o) { $t + (ConvertTo-TabJson $i ($lvl + 1)) }
+        return "[`n" + ($items -join ",`n") + "`n$tc]"
+    }
+    if ($o -is [pscustomobject]) {
+        $props = @($o.PSObject.Properties)
+        if ($props.Count -eq 0) { return '{}' }
+        $items = foreach ($p in $props) { $t + '"' + $p.Name + '": ' + (ConvertTo-TabJson $p.Value ($lvl + 1)) }
+        return "{`n" + ($items -join ",`n") + "`n$tc}"
+    }
+    return [string]$o
+}
 function Test-PzoInstalled { Test-Path -LiteralPath (Join-Path $GameDirectory 'pzopt-installed.txt') }
 # The author's install.ps1 from the newest GitHub release, saved to %TEMP%. $null when GitHub is unreachable.
 function Get-PzoScript {
@@ -144,8 +163,26 @@ function Invoke-Pzo([ValidateSet('Install', 'Uninstall', 'Status')][string]$Acti
     }
     & powershell.exe @a | Out-Host
     if ($LASTEXITCODE -ne 0) { Warn (L "PZ_Optimization: код $LASTEXITCODE (см. сообщение выше)." "PZ_Optimization: exit code $LASTEXITCODE (see the message above)."); return $false }
-    if ($Action -ne 'Status') { Show-PzoLaunchOption $Action }
+    if ($Action -ne 'Status') { Sync-PzoAgent; Show-PzoLaunchOption $Action }
     $true
+}
+# PZ_Optimization's installer puts its agent into ProjectZomboid64.json, but the game reads ProjectZomboid64.site.json
+# when it exists (written by this installer), so without this the agent never loads and its Lua menu errors (2026-11-13).
+# The agent has to come first, before ZombieBuddy's zbNative.
+$PzoAgentArg = '-javaagent:pzopt/agent/pzopt-agent.jar'
+function Set-PzoAgentArg([string[]]$vmArgs) {
+    $rest = @($vmArgs | Where-Object { $_ -and $_ -notmatch '(?i)^-javaagent:pzopt/' })
+    if (Test-Path -LiteralPath (Join-Path $GameDirectory 'pzopt\agent\pzopt-agent.jar')) { @($PzoAgentArg) + $rest } else { $rest }
+}
+function Sync-PzoAgent {
+    $site = Join-Path $GameDirectory 'ProjectZomboid64.site.json'
+    if ($DryRun -or -not (Test-Path -LiteralPath $site)) { return }
+    $cfg = Get-Content -LiteralPath $site -Raw | ConvertFrom-Json
+    $old = @($cfg.vmArgs); $new = Set-PzoAgentArg $old
+    if (($old -join "`n") -eq ($new -join "`n")) { return }
+    $cfg.vmArgs = $new
+    [IO.File]::WriteAllText($site, (ConvertTo-TabJson $cfg) + "`n", (New-Object Text.UTF8Encoding($false)))
+    Info $(if ($new -contains $PzoAgentArg) { (L 'Агент PZ_Optimization добавлен в ProjectZomboid64.site.json.' 'PZ_Optimization agent added to ProjectZomboid64.site.json.') } else { (L 'Агент PZ_Optimization убран из ProjectZomboid64.site.json.' 'PZ_Optimization agent removed from ProjectZomboid64.site.json.') })
 }
 # Since 42.22 PZ_Optimization loads as a Java agent, and on Windows the game closes at once unless Steam starts it through
 # pzopt-launch.cmd. Steam keeps launch options in its own config and rewrites it while running, so the player pastes the
@@ -488,26 +525,6 @@ foreach ($item in $plan) {
     Info (L "скопирован: $target" "copied: $target")
 }
 
-# Tab-indented JSON, same style as the game's own ProjectZomboid64.json.
-function ConvertTo-TabJson($o, [int]$lvl = 0) {
-    $t = "`t" * ($lvl + 1); $tc = "`t" * $lvl
-    if ($null -eq $o) { return 'null' }
-    if ($o -is [string]) { return '"' + ($o.Replace('\', '\\').Replace('"', '\"')) + '"' }
-    if ($o -is [bool]) { return $o.ToString().ToLower() }
-    if ($o -is [array]) {
-        if ($o.Count -eq 0) { return '[]' }
-        $items = foreach ($i in $o) { $t + (ConvertTo-TabJson $i ($lvl + 1)) }
-        return "[`n" + ($items -join ",`n") + "`n$tc]"
-    }
-    if ($o -is [pscustomobject]) {
-        $props = @($o.PSObject.Properties)
-        if ($props.Count -eq 0) { return '{}' }
-        $items = foreach ($p in $props) { $t + '"' + $p.Name + '": ' + (ConvertTo-TabJson $p.Value ($lvl + 1)) }
-        return "{`n" + ($items -join ",`n") + "`n$tc}"
-    }
-    return [string]$o
-}
-
 # ---------------------------------------------------------------- launcher settings
 Step (L 'Параметры запуска (ProjectZomboid64.site.json)' 'Launch settings (ProjectZomboid64.site.json)')
 $settings = Join-Path $GameDirectory 'ProjectZomboid64.site.json'
@@ -579,7 +596,7 @@ foreach ($a in $arguments) {
     if ($a -match '(?i)pz3dLoader') { continue }
     if (-not $result.Contains($a)) { $result.Add($a) }
 }
-$arguments = @($result)
+$arguments = Set-PzoAgentArg @($result)
 Info (L "Память для игры: $heap ГБ" "Game memory: $heap GB")
 
 # GC for Windows 10 build 17134+: Shenandoah (recommended by the game) instead of ZGC.
