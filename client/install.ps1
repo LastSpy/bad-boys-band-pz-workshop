@@ -163,7 +163,7 @@ function Invoke-Pzo([ValidateSet('Install', 'Uninstall', 'Status')][string]$Acti
     }
     & powershell.exe @a | Out-Host
     if ($LASTEXITCODE -ne 0) { Warn (L "PZ_Optimization: код $LASTEXITCODE (см. сообщение выше)." "PZ_Optimization: exit code $LASTEXITCODE (see the message above)."); return $false }
-    if ($Action -ne 'Status') { Sync-PzoAgent; Show-PzoLaunchOption $Action }
+    if ($Action -ne 'Status') { Sync-PzoAgent; Set-PzoLaunchOption $Action }
     $true
 }
 # PZ_Optimization's installer puts its agent into ProjectZomboid64.json, but the game reads ProjectZomboid64.site.json
@@ -185,22 +185,158 @@ function Sync-PzoAgent {
     Info $(if ($new -contains $PzoAgentArg) { (L 'Агент PZ_Optimization добавлен в ProjectZomboid64.site.json.' 'PZ_Optimization agent added to ProjectZomboid64.site.json.') } else { (L 'Агент PZ_Optimization убран из ProjectZomboid64.site.json.' 'PZ_Optimization agent removed from ProjectZomboid64.site.json.') })
 }
 # Since 42.22 PZ_Optimization loads as a Java agent, and on Windows the game closes at once unless Steam starts it through
-# pzopt-launch.cmd. Steam keeps launch options in its own config and rewrites it while running, so the player pastes the
-# line (the author's install.ps1 also copies it to the clipboard). After an uninstall the option must be cleared again.
-function Show-PzoLaunchOption([string]$Action) {
-    $cmd = Join-Path $GameDirectory 'pzopt-launch.cmd'
+# pzopt-launch.cmd (a launch option). Steam keeps launch options in userdata\<account>\config\localconfig.vdf and rewrites
+# that file while it runs, so Steam is closed for the edit and started again. If that fails, the player pastes the line.
+function Get-PzoLaunchPrefix { "`"$(Join-Path $env:SystemRoot 'System32\conhost.exe')`" --headless `"$(Join-Path $GameDirectory 'pzopt-launch.cmd')`"" }
+# Adds the wrapper in front of %command%. -agentlib:zbNative is dropped: the launcher JSON already has it, and a second
+# copy could start ZombieBuddy before PZ_Optimization's agent (then the game runs stock).
+function Add-PzoLaunchArgs([string]$opts, [string]$prefix) {
+    $o = ([regex]::Replace([string]$opts, '(?i)(^|\s)-agentlib:zbNative(?=\s|$)', ' ') -replace '\s+', ' ').Trim()
+    if ($o -match '(?i)pzopt-launch\.cmd') { return $(if ($o -eq ([string]$opts).Trim()) { $opts } else { $o }) }
+    if ($o.Contains('%command%')) { return $o.Replace('%command%', "$prefix %command%") }
+    ("$prefix %command% $o").Trim()
+}
+function Remove-PzoLaunchArgs([string]$opts) {
+    $o = ([regex]::Replace([string]$opts, '(?i)"[^"]*conhost\.exe"\s+--headless\s+"[^"]*pzopt-launch\.cmd"\s*', '')).Trim()
+    if ($o -eq '%command%') { return '' }
+    if ($o.StartsWith('%command% ')) { return $o.Substring(10).Trim() }
+    $o
+}
+function Get-SteamLocalConfig {
+    $steam = (Get-ItemProperty 'HKCU:\Software\Valve\Steam' -ErrorAction SilentlyContinue).SteamPath
+    if (-not $steam) { return $null }
+    $user = (Get-ItemProperty 'HKCU:\Software\Valve\Steam\ActiveProcess' -ErrorAction SilentlyContinue).ActiveUser
+    if ($user) { $file = Join-Path $steam "userdata\$user\config\localconfig.vdf"; if (Test-Path -LiteralPath $file) { return $file } }
+    Get-ChildItem -Path (Join-Path $steam 'userdata\*\config\localconfig.vdf') -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
+}
+# Valve KeyValues text: quoted strings (Value unescaped; Start/End span the quotes) and braces; // comments skipped.
+function Read-VdfTokens([string]$text) {
+    $tokens = New-Object System.Collections.Generic.List[object]
+    $i = 0; $n = $text.Length
+    while ($i -lt $n) {
+        $c = $text[$i]
+        if ($c -eq '"') {
+            $j = $i + 1; $sb = New-Object Text.StringBuilder
+            while ($j -lt $n -and $text[$j] -ne '"') { if ($text[$j] -eq '\' -and $j + 1 -lt $n) { $j++ }; [void]$sb.Append($text[$j]); $j++ }
+            $tokens.Add([pscustomobject]@{ Kind = 's'; Value = $sb.ToString(); Start = $i; End = $j + 1 }); $i = $j + 1
+        }
+        elseif ($c -eq '{' -or $c -eq '}') { $tokens.Add([pscustomobject]@{ Kind = [string]$c; Value = $null; Start = $i; End = $i + 1 }); $i++ }
+        elseif ($c -eq '/' -and $i + 1 -lt $n -and $text[$i + 1] -eq '/') { while ($i -lt $n -and $text[$i] -ne "`n") { $i++ } }
+        else { $i++ }
+    }
+    , $tokens
+}
+# Index of the key token at $path (case-insensitive), or -1.
+function Find-VdfKey($tokens, [string[]]$path) {
+    $stack = New-Object System.Collections.Generic.List[string]; $key = $null
+    for ($k = 0; $k -lt $tokens.Count; $k++) {
+        $t = $tokens[$k]
+        if ($t.Kind -eq '{') { $stack.Add([string]$key); $key = $null }
+        elseif ($t.Kind -eq '}') { if ($stack.Count) { $stack.RemoveAt($stack.Count - 1) }; $key = $null }
+        elseif ($null -ne $key) { $key = $null }
+        else {
+            $key = $t.Value
+            if ($stack.Count -eq $path.Count - 1 -and $key -eq $path[-1]) {
+                $same = $true; for ($d = 0; $d -lt $stack.Count; $d++) { if ($stack[$d] -ne $path[$d]) { $same = $false; break } }
+                if ($same) { return $k }
+            }
+        }
+    }
+    -1
+}
+# Index of the '}' that closes the block whose key token is at $k.
+function Find-VdfBlockEnd($tokens, [int]$k) {
+    $depth = 0
+    for ($m = $k + 1; $m -lt $tokens.Count; $m++) {
+        if ($tokens[$m].Kind -eq '{') { $depth++ } elseif ($tokens[$m].Kind -eq '}') { $depth--; if ($depth -eq 0) { return $m } }
+    }
+    -1
+}
+$VdfApps = @('UserLocalConfigStore', 'Software', 'Valve', 'Steam', 'apps')
+function ConvertTo-VdfString([string]$s) { '"' + $s.Replace('\', '\\').Replace('"', '\"') + '"' }
+function Get-SteamLaunchOptions([string]$file) {
+    $tokens = Read-VdfTokens ([IO.File]::ReadAllText($file))
+    $k = Find-VdfKey $tokens ($VdfApps + @([string]$AppId, 'LaunchOptions'))
+    if ($k -ge 0 -and $tokens[$k + 1].Kind -eq 's') { $tokens[$k + 1].Value } else { '' }
+}
+# Writes the value; adds the key (and the game's block) when missing. $false when the file has no apps block.
+function Set-SteamLaunchOptions([string]$file, [string]$value) {
+    $text = [IO.File]::ReadAllText($file)
+    $tokens = Read-VdfTokens $text
+    $k = Find-VdfKey $tokens ($VdfApps + @([string]$AppId, 'LaunchOptions'))
+    if ($k -ge 0 -and $tokens[$k + 1].Kind -eq 's') {
+        $v = $tokens[$k + 1]; $text = $text.Substring(0, $v.Start) + (ConvertTo-VdfString $value) + $text.Substring($v.End)
+    }
+    else {
+        $g = Find-VdfKey $tokens ($VdfApps + @([string]$AppId))
+        $line = ("`t" * 6) + '"LaunchOptions"' + "`t`t" + (ConvertTo-VdfString $value) + "`n"
+        if ($g -lt 0) {
+            $g = Find-VdfKey $tokens $VdfApps
+            if ($g -lt 0) { return $false }
+            $line = ("`t" * 5) + "`"$AppId`"`n" + ("`t" * 5) + "{`n" + $line + ("`t" * 5) + "}`n"
+        }
+        $end = Find-VdfBlockEnd $tokens $g
+        if ($end -lt 0) { return $false }
+        $at = $text.LastIndexOf("`n", $tokens[$end].Start) + 1
+        $text = $text.Substring(0, $at) + $line + $text.Substring($at)
+    }
+    $backup = "$file.bbb-backup"
+    if (-not (Test-Path -LiteralPath $backup)) { Copy-Item -LiteralPath $file -Destination $backup }
+    [IO.File]::WriteAllText($file, $text, (New-Object Text.UTF8Encoding($false)))
+    $true
+}
+function Get-SteamExe { $p = (Get-ItemProperty 'HKCU:\Software\Valve\Steam' -ErrorAction SilentlyContinue).SteamPath; if ($p) { Join-Path $p 'steam.exe' } }
+function Stop-Steam {
+    if (-not (Get-Process steam -ErrorAction SilentlyContinue)) { return $true }
+    $exe = Get-SteamExe; if (-not $exe) { return $false }
+    Info (L 'Закрываю Steam...' 'Closing Steam...')
+    Start-Process -FilePath $exe -ArgumentList '-shutdown'
+    for ($i = 0; $i -lt 90; $i++) { Start-Sleep -Seconds 1; if (-not (Get-Process steam -ErrorAction SilentlyContinue)) { Start-Sleep -Seconds 2; return $true } }
+    $false
+}
+function Show-PzoManualOption([string]$Action, [string]$line) {
     if ($Action -eq 'Uninstall') {
-        Warn (L 'Если в Steam был параметр запуска с pzopt-launch.cmd - удалите его (Steam > Project Zomboid > Свойства > Общие > Параметры запуска), иначе игра не запустится.' 'If Steam has a launch option with pzopt-launch.cmd, clear it (Steam > Project Zomboid > Properties > General > Launch Options), or the game will not start.')
+        Warn (L 'Не удалось убрать параметр запуска сам. Steam > Project Zomboid > Свойства > Общие > Параметры запуска: удалите часть с pzopt-launch.cmd, иначе игра не запустится.' 'Could not clear the launch option. Steam > Project Zomboid > Properties > General > Launch Options: remove the part with pzopt-launch.cmd, or the game will not start.')
         return
     }
-    if (-not (Test-Path -LiteralPath $cmd)) { return }
-    $line = "`"$(Join-Path $env:SystemRoot 'System32\conhost.exe')`" --headless `"$cmd`" %command%"
-    Warn (L 'ОБЯЗАТЕЛЬНО: без этого параметра запуска игра с PZ_Optimization сразу закрывается.' 'REQUIRED: without this launch option the game closes at once with PZ_Optimization.')
-    Info (L 'Steam > правый клик по Project Zomboid > Свойства > Общие > Параметры запуска, вставьте строку (она уже в буфере обмена);' 'Steam > right-click Project Zomboid > Properties > General > Launch Options, paste the line (it is on the clipboard);')
-    Info (L 'если там уже были параметры, оставьте их после %command%:' 'keep any options you already had after %command%:')
+    Warn (L 'Не удалось вписать параметр запуска сам. Без него игра с PZ_Optimization сразу закрывается.' 'Could not set the launch option. Without it the game closes at once with PZ_Optimization.')
+    Info (L 'Steam > правый клик по Project Zomboid > Свойства > Общие > Параметры запуска, вставьте строку (она в буфере обмена):' 'Steam > right-click Project Zomboid > Properties > General > Launch Options, paste the line (it is on the clipboard):')
     Write-Host "  $line" -ForegroundColor Cyan
-    if (-not $DryRun) { try { Set-Clipboard -Value $line } catch { } }
-    if (-not ($Yes -or $DryRun)) { [void](Read-Host (L 'Вставили? Нажмите Enter' 'Pasted it? Press Enter')) }
+    try { Set-Clipboard -Value $line } catch { }
+    if (-not $Yes) { [void](Read-Host (L 'Вставили? Нажмите Enter' 'Pasted it? Press Enter')) }
+}
+# Install: put the wrapper into the game's Steam launch options. Uninstall: take it out again.
+function Set-PzoLaunchOption([string]$Action) {
+    $prefix = Get-PzoLaunchPrefix
+    if ($Action -ne 'Uninstall' -and -not (Test-Path -LiteralPath (Join-Path $GameDirectory 'pzopt-launch.cmd'))) { return }
+    $compose = { param($o) if ($Action -eq 'Uninstall') { Remove-PzoLaunchArgs $o } else { Add-PzoLaunchArgs $o $prefix } }
+    $file = Get-SteamLocalConfig
+    $old = if ($file) { try { Get-SteamLaunchOptions $file } catch { $null } }
+    if ($null -ne $old -and (& $compose $old) -eq $old) { Info (L 'Параметр запуска Steam уже в порядке.' 'Steam launch option already set.'); return }
+    if ($DryRun) { Info (L "Параметр запуска Steam будет: $(& $compose $old)" "Steam launch option would be: $(& $compose $old)"); return }
+    $ok = $false; $new = $null
+    if ($null -ne $old -and (Stop-Steam)) {
+        try {
+            $old = Get-SteamLaunchOptions $file; $new = & $compose $old
+            $ok = ($new -eq $old) -or (Set-SteamLaunchOptions $file $new)
+        } catch { Warn $_.Exception.Message }
+        $exe = Get-SteamExe; if ($exe) { Start-Process -FilePath $exe }
+        Info (L 'Steam запущен снова.' 'Steam started again.')
+    }
+    if ($ok) { Info (L "Параметр запуска Steam: $(if ($new) { $new } else { '(пусто)' })" "Steam launch option: $(if ($new) { $new } else { '(empty)' })") }
+    else { Show-PzoManualOption $Action "$prefix %command%" }
+}
+# Asked before PZ_Optimization is installed: it is not from the Workshop and changes the game's launch.
+function Confirm-PzoDetails {
+    if ($DryRun -or $Yes) { return $true }
+    Warn (L 'Перед установкой PZ_Optimization подтвердите:' 'Before installing PZ_Optimization, please confirm:')
+    Info (L '  1. Мод ставится из стороннего источника - с GitHub автора (github.com/xD3I/PZ_Optimization), не из мастерской Steam.' '  1. The mod comes from a third-party source - its author''s GitHub (github.com/xD3I/PZ_Optimization), not the Steam Workshop.')
+    Info (L '  2. Он вносит изменения в файлы игры: кладёт свои файлы в папку игры и добавляет свой Java-агент в ProjectZomboid64.json и ProjectZomboid64.site.json.' '  2. It changes the game files: puts its files into the game folder and adds its Java agent to ProjectZomboid64.json and ProjectZomboid64.site.json.')
+    Info (L '  3. Он меняет параметры запуска игры в Steam: туда впишется команда ниже (Steam для этого закроется на несколько секунд и запустится снова):' '  3. It changes the game''s Steam launch options: the command below is added (Steam closes for a few seconds for this and starts again):')
+    Write-Host "     $(Get-PzoLaunchPrefix) %command%" -ForegroundColor Cyan
+    Info (L '  Всё это убирается вместе с модом: Install.cmd > Настройки > Удалить PZ_Optimization.' '  All of this is undone with the mod: Install.cmd > Settings > Remove PZ_Optimization.')
+    (Read-Host (L 'Подтверждаете? (д/Н)' 'Confirm? (y/N)')) -match '^(?i)(y|yes|д|да)$'
 }
 function Save-State($changes) {
     if ($DryRun) { return }
@@ -234,9 +370,10 @@ if ($Mode -eq 'Settings') {
     Info (L '  0 - Выход' '  0 - Exit')
     if ((Read-Host (L 'Номер' 'Number')) -ne '1') { Info (L 'Выход.' 'Bye.'); exit 0 }
     if ($pzoOn) {
-        if (Invoke-Pzo 'Uninstall') { Save-State @{ pzOptimization = $false; lang = $Lang }; Info (L 'PZ_Optimization удалён; "Обновить" его больше не поставит.' 'PZ_Optimization removed; "Update" will not install it again.') }
-    } else {
-        if (Invoke-Pzo 'Install') { Save-State @{ pzOptimization = $true; lang = $Lang }; Info (L 'PZ_Optimization установлен.' 'PZ_Optimization installed.') }
+        if (Invoke-Pzo 'Uninstall') { Save-State @{ pzOptimization = $false; pzoConfirmed = $false; lang = $Lang }; Info (L 'PZ_Optimization удалён; "Обновить" спросит, ставить ли его снова.' 'PZ_Optimization removed; "Update" will ask whether to install it again.') }
+    } elseif (-not (Confirm-PzoDetails)) { Info (L 'Не подтверждено.' 'Not confirmed.') }
+    else {
+        if (Invoke-Pzo 'Install') { Save-State @{ pzOptimization = $true; pzoConfirmed = $true; lang = $Lang }; Info (L 'PZ_Optimization установлен.' 'PZ_Optimization installed.') }
     }
     exit 0
 }
@@ -634,16 +771,25 @@ if ($PzoPaused) {
         elseif (Invoke-Pzo 'Uninstall') { Info (L 'Удалена сборка для прошлой версии игры (могла ронять игру при запуске).' 'Removed the build for the previous game version (it could crash the game at start).') }
     }
 }
-elseif ($Mode -eq 'Update' -and $null -ne $state.pzOptimization) { $wantPzo = [bool]$state.pzOptimization }
+# Update keeps it only for players who confirmed the three points (pzoConfirmed); everyone else is asked, also on Update.
+elseif ($Mode -eq 'Update' -and $state.pzOptimization -eq $true -and $state.pzoConfirmed -eq $true) { $wantPzo = $true }
 elseif ($DryRun -or $Yes) { $wantPzo = $true }
 else {
     Info (L 'PZ_Optimization заменяет часть классов игры: меньше фризов, быстрее подгружаются чанки.' 'PZ_Optimization replaces some game classes: fewer stutters, faster chunk loading.')
     Info (L 'Автор не проверял его в мультиплеере и с другими модами. Удалить можно в любой момент: Install.cmd > Настройки.' 'Its author has not tested it in multiplayer or with other mods. Remove it any time: Install.cmd > Settings.')
-    $wantPzo = (Read-Host (L 'Ставить PZ_Optimization? (Y/n)' 'Install PZ_Optimization? (Y/n)')) -notmatch (L '^(n|н)' '^(n|н)')
+    $wantPzo = (Read-Host (L 'Ставить PZ_Optimization? (Д/н)' 'Install PZ_Optimization? (Y/n)')) -notmatch '^(?i)(n|no|н|нет)$'
+    if ($wantPzo) { $wantPzo = Confirm-PzoDetails; if (-not $wantPzo) { Info (L 'Не подтверждено.' 'Not confirmed.') } }
 }
 if ($PzoPaused) { }
-elseif (-not $wantPzo) { Info (L 'пропущено (выключено в настройках)' 'skipped (turned off in Settings)') }
-elseif ($DryRun) { [void](Invoke-Pzo 'Status') }
+elseif (-not $wantPzo) {
+    # A build left from an earlier install without the launch option would only make the game close at start.
+    if (Test-PzoInstalled) {
+        if ($DryRun) { Info (L 'будет удалён установленный PZ_Optimization' 'would remove the installed PZ_Optimization') }
+        elseif (Invoke-Pzo 'Uninstall') { Info (L 'Установленный PZ_Optimization удалён.' 'The installed PZ_Optimization was removed.') }
+    }
+    else { Info (L 'не ставится' 'not installed') }
+}
+elseif ($DryRun) { [void](Invoke-Pzo 'Status'); Set-PzoLaunchOption 'Install' }
 else {
     if (Invoke-Pzo 'Install') { Info (L 'Обновления PZ_Optimization: главное меню игры > PZ OPTIMIZATION > UPDATE.' 'PZ_Optimization updates: game main menu > PZ OPTIMIZATION > UPDATE.') }
 }
@@ -729,7 +875,7 @@ else {
 
 $installed = @(@(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'workshop-ids.txt') -ErrorAction SilentlyContinue) + $RequiredIds |
     ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^\d+$' } | Select-Object -Unique)
-Save-State @{ items = $installed; heapGB = $heap; pzOptimization = $(if ($null -eq $wantPzo) { $null } else { [bool]$wantPzo }); mode = $Mode; lang = $Lang; appliedOptions = $appliedOptions }
+Save-State @{ items = $installed; heapGB = $heap; pzOptimization = $(if ($null -eq $wantPzo) { $null } else { [bool]$wantPzo }); pzoConfirmed = $(if ($PzoPaused) { [bool]$state.pzoConfirmed } else { $wantPzo -eq $true }); mode = $Mode; lang = $Lang; appliedOptions = $appliedOptions }
 
 Write-Host ''
 if ($DryRun) { Write-Host (L 'Пробный прогон: ничего не изменено.' 'Dry run: nothing changed.') -ForegroundColor Green }
