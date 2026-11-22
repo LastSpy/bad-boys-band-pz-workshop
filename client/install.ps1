@@ -164,7 +164,33 @@ function Invoke-Pzo([ValidateSet('Install', 'Uninstall', 'Status')][string]$Acti
     & powershell.exe @a | Out-Host
     if ($LASTEXITCODE -ne 0) { Warn (L "PZ_Optimization: код $LASTEXITCODE (см. сообщение выше)." "PZ_Optimization: exit code $LASTEXITCODE (see the message above)."); return $false }
     if ($Action -ne 'Status') { Sync-PzoAgent; Set-PzoLaunchOption $Action }
+    if ($Action -eq 'Install') { Set-PzoForcedOptions }
     $true
+}
+# Two PZ_Optimization settings break Project Viewpoint 0.1.7 (xD3I/PZ_Optimization issues #130 and #124, checked here
+# 2026-11-22): zombie animators on worker threads ("Zombie animators on other cores") race Viewpoint's zombie skeleton
+# batch and drop the game to the main menu; the heavy-frame model hold ("3D models only every Nth heavy frame") leaves
+# zombies without a 3D model, invisible in first person. Both are set in Zomboid\pzopt\options.ini (the file the game's
+# PZ Optimization menu writes) on every install and update; the other settings stay as the player chose.
+$PzoForcedOptions = [ordered]@{ animatorParallel = 'false'; zombieModelAddHeavyEvery = '0' }
+function Set-PzoForcedOptions {
+    $file = Join-Path $env:USERPROFILE 'Zomboid\pzopt\options.ini'
+    $lines = New-Object System.Collections.Generic.List[string]
+    if (Test-Path -LiteralPath $file) { $lines.AddRange([string[]][IO.File]::ReadAllLines($file)) }
+    $changed = $false
+    foreach ($key in $PzoForcedOptions.Keys) {
+        $want = "$key=$($PzoForcedOptions[$key])"
+        $at = -1
+        for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match "^\s*$key\s*=") { $at = $i; break } }
+        if ($at -ge 0 -and $lines[$at].Trim() -eq $want) { continue }
+        if ($at -ge 0) { $lines[$at] = $want } else { $lines.Add($want) }
+        $changed = $true
+        Info $(if ($DryRun) { (L "PZ_Optimization, для Viewpoint: будет $want" "PZ_Optimization, for Viewpoint: will set $want") } else { (L "PZ_Optimization, для Viewpoint: $want" "PZ_Optimization, for Viewpoint: $want") })
+    }
+    if (-not $changed) { Info (L 'PZ_Optimization: настройки для Viewpoint уже выставлены.' 'PZ_Optimization: the settings for Viewpoint are already set.'); return }
+    if ($DryRun) { return }
+    New-Item -ItemType Directory -Path (Split-Path $file) -Force | Out-Null
+    [IO.File]::WriteAllText($file, (($lines -join "`n") + "`n"), (New-Object Text.UTF8Encoding($false)))
 }
 # PZ_Optimization's installer puts its agent into ProjectZomboid64.json, but the game reads ProjectZomboid64.site.json
 # when it exists (written by this installer), so without this the agent never loads and its Lua menu errors (2026-11-13).
@@ -789,7 +815,7 @@ elseif (-not $wantPzo) {
     }
     else { Info (L 'не ставится' 'not installed') }
 }
-elseif ($DryRun) { [void](Invoke-Pzo 'Status'); Set-PzoLaunchOption 'Install' }
+elseif ($DryRun) { [void](Invoke-Pzo 'Status'); Set-PzoLaunchOption 'Install'; Set-PzoForcedOptions }
 else {
     if (Invoke-Pzo 'Install') { Info (L 'Обновления PZ_Optimization: главное меню игры > PZ OPTIMIZATION > UPDATE.' 'PZ_Optimization updates: game main menu > PZ OPTIMIZATION > UPDATE.') }
 }

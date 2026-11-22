@@ -317,7 +317,6 @@ ViewpointTrueBallistics
 ViewpointForaging
 ViewpointFences3D
 ProjectViewpointShelves
-PoolPit
 WashFix
 FirstAidVHSTapes
 w_betterwringing

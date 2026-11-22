@@ -22,6 +22,8 @@ What the installer does:
   not the Workshop; it changes game files (its files in the game folder, its Java agent in the launcher JSON); and it
   adds a Steam launch option the game needs since 42.22 - the installer writes it itself, closing Steam for a few
   seconds and starting it again. Remove it all with 3 - Settings. Later updates: game main menu > PZ OPTIMIZATION > UPDATE;
+  every install and update also turns off two of its settings that break Viewpoint (crash to the menu, zombies
+  invisible in first person): animatorParallel and zombieModelAddHeavyEvery (Zomboid\pzopt\options.ini);
 - enables exactly the server's mods in the game (Zomboid\mods\default.txt; the previous list is
   kept next to it as .bak-DATE).
 
@@ -59,6 +61,8 @@ Bad boys Band - установщик для сервера Project Zomboid (Buil
   мастерской; меняет файлы игры (свои файлы в папке игры, свой Java-агент в JSON запуска); добавляет параметр запуска в
   Steam, без которого игра с 42.22 сразу закрывается, - установщик вписывает его сам, закрыв Steam на несколько секунд
   и запустив снова. Всё это убирается через 3 - Настройки. Обновления потом: главное меню игры > PZ OPTIMIZATION > UPDATE;
+  при каждой установке и обновлении выключает две его настройки, ломающие Viewpoint (вылет в меню, невидимые
+  от первого лица зомби): animatorParallel и zombieModelAddHeavyEvery (Zomboid\pzopt\options.ini);
 - включает в игре ровно те моды, что на сервере (Zomboid\mods\default.txt; прежний список
   сохраняется рядом с расширением .bak-ДАТА).
 
